@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from .models import User
+from .models import User, Img
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
+from werkzeug.utils import secure_filename
 
 
-
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 auth = Blueprint('auth', __name__)
 
@@ -58,3 +59,47 @@ def sign_up():
             #add user to database
         
     return render_template("sign_up.html", user=current_user)
+
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@auth.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file', category='error')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            mimetype = file.mimetype
+            file = Img(name = filename, file = file.read(), mimetype=mimetype)
+            db.session.add(file)
+            db.session.commit()
+
+    return render_template("upload_page.html")
+
+        
+
+
+
+
+
+
+"""
+@auth.route('/upload', methods=['GET','POST'])
+def upload_page():
+    pic = request.files['pic']
+    if not pic:
+        flash('No pic uploaded', category='error')
+    name = request.files[secure_filename(pic.name)]
+    mimetype = request.files[(pic.mimetype)]
+    img = Img(img=pic.read(), mimetype=mimetype, name=name)
+    db.session.add(img)
+    db.session.commit()
+    return 'Image has been uploaded!', 200
+    #return render_template("upload_page.html")
+"""
