@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}{% block 
+    content %} 
+    <div class="container">
+        <div class="row justify-content-center">
+          <h1>Adverts</h1>
+        </div>
+    </div>
+    <div class="right-search row justify-content-center">
+      <div class="input-group rounded">
+          <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+          <span class="input-group-text border-0" id="search-addon">
+              <i class="fas fa-search"></i>
+          </span>
+      </div>
+    </div>
+    <br>
+    <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Location</th>
+            <th scope="col">Description</th>
+            <th scope="col">Type</th>
+            <th scope="col">Price</th>
+            <th scope="col">Contact</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for advert in myAdverts %}
+            <tr>
+              <th scope="row">{{ advert.location }}</th>
+              <td>{{ advert.description }}</td>
+              <td>{{ advert.type }}</td>
+              <td>{{ advert.price }}</td>
+              <td>{{ advert.contact }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    
+    
+{% endblock %}
