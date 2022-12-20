@@ -2,11 +2,13 @@ from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 
-class Img(db.Model):
+class Adverts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, nullable=False)
-    file = db.Column(db.Text, unique=True, nullable=False)
-    mimetype = db.Column(db.Text, nullable=False)
+    location = db.Column(db.Text, nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    type = db.Column(db.Text, nullable=False)
+    contact = db.Column(db.Integer, nullable=False)
 
 
 

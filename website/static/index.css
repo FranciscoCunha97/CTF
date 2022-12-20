@@ -1,5 +1,5 @@
 .right-search {
-    align-items: right;
+    align-items: center;
     display: flex;
-    justify-content: right;
+    justify-content: center;
 }

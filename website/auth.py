@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from .models import User, Img
+from .models import User, Adverts
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 
 
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'pdf'}
 
 auth = Blueprint('auth', __name__)
 
@@ -14,7 +14,13 @@ auth = Blueprint('auth', __name__)
 def login():
     if request.method == 'POST':
         email=request.form.get('email')
-        password = request.form.get('password')
+        password = request.form.get('password1')
+
+        user = User.query.filter_by(email='admin@user-admin.com').first()
+        if user:
+            if check_password_hash(user.password,password):
+                flash('Logged in with admnistrator account', category='success')     
+                return redirect(url_for('auth.upload_file'))
 
         user = User.query.filter_by(email=email).first()
         if user:
@@ -26,8 +32,7 @@ def login():
                 flash('Incorrect password, try again.', category='error')
         else:
             flash('email does not exist.', category='error')
-
-
+        
     return render_template("login.html", user=current_user)
 
 @auth.route('/sign-up',  methods=['GET', 'POST'])
@@ -53,13 +58,19 @@ def sign_up():
             new_user = User(email=email, firstName=firstName, password=generate_password_hash(password1, method='sha256'))
             db.session.add(new_user)
             db.session.commit()
-            login_user(user, remember=True)
+            login_user(new_user, remember=True)
             flash('Account created!', category='success')
             return redirect(url_for('views.home'))
             #add user to database
         
     return render_template("sign_up.html", user=current_user)
 
+
+@auth.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('auth.login'))
 
 
 def allowed_file(filename):
@@ -69,37 +80,28 @@ def allowed_file(filename):
 @auth.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        file = request.files['file']
-        if file.filename == '':
-            flash('No selected file', category='error')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            mimetype = file.mimetype
-            file = Img(name = filename, file = file.read(), mimetype=mimetype)
-            db.session.add(file)
-            db.session.commit()
+        location = request.form.get('location')
+        price = request.form.get('price')
+        description = request.form.get('description')
+        type = request.form.get('type')
+        contact = request.form.get('contact')
 
-    return render_template("upload_page.html")
-
+        advert = Adverts(location=location, price=price, description=description, type=type, contact=contact)
+        db.session.add(advert)
+        db.session.commit()
+        #login_user(user, remember=True)
+        flash('Advert created!', category='success')
+        return redirect(url_for('auth.flag'))
+        #add user to database
         
+    return render_template("upload_page.html", user=current_user)
 
+@auth.route('/adverts')
+def home():
+    myAdverts = Adverts.query.all()
+    return render_template('adverts.html',myAdverts=myAdverts)
 
+@auth.route('/flag')
+def flag():
+    return render_template('flag.html')
 
-
-
-
-"""
-@auth.route('/upload', methods=['GET','POST'])
-def upload_page():
-    pic = request.files['pic']
-    if not pic:
-        flash('No pic uploaded', category='error')
-    name = request.files[secure_filename(pic.name)]
-    mimetype = request.files[(pic.mimetype)]
-    img = Img(img=pic.read(), mimetype=mimetype, name=name)
-    db.session.add(img)
-    db.session.commit()
-    return 'Image has been uploaded!', 200
-    #return render_template("upload_page.html")
-"""
