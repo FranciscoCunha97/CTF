@@ -104,4 +104,3 @@ def home():
 @auth.route('/flag')
 def flag():
     return render_template('flag.html')
-
