@@ -98,8 +98,13 @@ def upload_file():
 
 @auth.route('/adverts')
 def home():
-    myAdverts = Adverts.query.all()
-    return render_template('adverts.html',myAdverts=myAdverts)
+    query = request.args.get('query')
+
+    if query:
+        myAdverts = Adverts.query.filter(Adverts.location.contains(query) | Adverts.type.contains(query))
+    else:
+        myAdverts = Adverts.query.all()
+        return render_template('adverts.html',myAdverts=myAdverts)
 
 @auth.route('/flag')
 def flag():
